@@ -29,6 +29,7 @@ classifiers = [
 
 [project.urls]
 Repository = "https://github.com/sakshamm21/tier-hop"
+Documentation = "https://github.com/sakshamm21/tier-hop/tree/main/docs"
 Issues = "https://github.com/sakshamm21/tier-hop/issues"
 Changelog = "https://github.com/sakshamm21/tier-hop/blob/main/CHANGELOG.md"
 

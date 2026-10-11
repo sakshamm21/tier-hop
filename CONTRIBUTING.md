@@ -81,12 +81,12 @@ Users can already add any provider through the config file, so a preset is only 
 
 ## Changing how failures are handled
 
-The table in the README under "How it picks a model" is the specification. If you change `Router._judge` or the cooldown lengths, update that table in the same change and add a test to `tests/test_router.py`.
+The table in [docs/reference.md](docs/reference.md) under "How it picks a model" is the specification. If you change `Router._judge` or the cooldown lengths, update that table in the same change and add a test to `tests/test_router.py`.
 
 ## Before you open a pull request
 
 - `pytest`, `ruff check .`, `ruff format --check .` and `mypy` pass. CI runs all four.
-- New behaviour has a test, and the README describes it if users can see it.
+- New behaviour has a test, and the README or [docs/](docs/) describe it if users can see it.
 - User-visible changes have a line under "Unreleased" in [CHANGELOG.md](CHANGELOG.md).
 - Nothing was added to `dependencies` in `pyproject.toml`.
 - No API keys in the diff. `.env` is ignored by git; keep it that way.
