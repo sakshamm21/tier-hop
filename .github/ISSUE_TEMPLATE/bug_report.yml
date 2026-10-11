@@ -1,0 +1,40 @@
+name: Bug report
+description: Something does not work the way the README says it should
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: Remove API keys from anything you paste here.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what you got instead.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How to reproduce
+      description: The command or the smallest piece of code that shows the problem.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Output
+      description: The error message, the proxy log lines, or the output of `tierhop check`.
+      render: shell
+  - type: input
+    id: provider
+    attributes:
+      label: Provider and model
+      description: The `provider/model` involved, if you know it.
+  - type: input
+    id: version
+    attributes:
+      label: Versions
+      description: tierhop version or commit, Python version and operating system.
+    validations:
+      required: true

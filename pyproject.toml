@@ -1,0 +1,67 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "tierhop"
+dynamic = ["version"]
+description = "One OpenAI-compatible endpoint over the free tiers of several LLM providers, with automatic failover when a quota runs out."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Saksham Malhotra" }]
+requires-python = ">=3.10"
+dependencies = []
+keywords = ["llm", "router", "free-tier", "openai-compatible", "failover", "proxy", "rate-limit"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Internet :: Proxy Servers",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Typing :: Typed",
+]
+
+[project.urls]
+Repository = "https://github.com/sakshamm21/tier-hop"
+Issues = "https://github.com/sakshamm21/tier-hop/issues"
+Changelog = "https://github.com/sakshamm21/tier-hop/blob/main/CHANGELOG.md"
+
+[project.scripts]
+tierhop = "tierhop.cli:main"
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.6", "mypy>=1.10"]
+
+[tool.hatch.version]
+path = "src/tierhop/_version.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/tierhop"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM"]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests script fake providers with one-line lambdas.
+"tests/*" = ["E731"]
+# The example shows the two lines a user adds above their existing imports.
+"examples/existing_openai_bot.py" = ["E402"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+files = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

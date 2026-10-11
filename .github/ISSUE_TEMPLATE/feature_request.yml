@@ -1,0 +1,25 @@
+name: Feature or provider request
+description: Suggest an improvement, or a free provider that should be built in
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do
+      description: The situation you are in, not only the solution you have in mind.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would help
+    validations:
+      required: true
+  - type: textarea
+    id: provider
+    attributes:
+      label: For a provider request
+      description: >
+        Its API base URL, a link to its free tier terms, and whether it has an
+        OpenAI-compatible chat completions endpoint. Providers with one-time trial
+        credit only are not added as built-ins.

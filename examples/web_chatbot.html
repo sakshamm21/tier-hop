@@ -1,0 +1,160 @@
+<!doctype html>
+<!--
+  A chatbot in one HTML file, talking to the tierhop proxy from the browser.
+
+  Start the proxy with `tierhop`, then open this file in a browser.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>tierhop chatbot</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --line: color-mix(in srgb, currentColor 18%, transparent);
+        --soft: color-mix(in srgb, currentColor 8%, transparent);
+      }
+      body {
+        margin: 0 auto;
+        padding: 16px;
+        max-width: 720px;
+        height: 100vh;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        font: 16px/1.5 system-ui, sans-serif;
+      }
+      #log {
+        flex: 1;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .message {
+        padding: 8px 12px;
+        border-radius: 12px;
+        max-width: 85%;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
+      .user {
+        align-self: flex-end;
+        background: var(--soft);
+      }
+      .bot {
+        align-self: flex-start;
+        border: 1px solid var(--line);
+      }
+      .note {
+        font-size: 12px;
+        opacity: 0.6;
+      }
+      form {
+        display: flex;
+        gap: 8px;
+      }
+      input {
+        flex: 1;
+        min-width: 0;
+        padding: 10px 12px;
+        font: inherit;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+      }
+      button {
+        padding: 10px 16px;
+        font: inherit;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="log"></div>
+    <form id="form">
+      <input id="input" placeholder="Type a message" autocomplete="off" autofocus />
+      <button>Send</button>
+    </form>
+
+    <script>
+      const PROXY = "http://127.0.0.1:4141/v1";
+      const messages = [{ role: "system", content: "You are a friendly assistant." }];
+
+      const log = document.getElementById("log");
+      const form = document.getElementById("form");
+      const input = document.getElementById("input");
+
+      function addMessage(kind, text = "") {
+        const element = document.createElement("div");
+        element.className = `message ${kind}`;
+        element.textContent = text;
+        log.append(element);
+        log.scrollTop = log.scrollHeight;
+        return element;
+      }
+
+      // Reads the streamed reply and calls onText with each new piece.
+      async function readStream(response, onText) {
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop();
+          for (const line of lines) {
+            const data = line.trim().replace(/^data:\s*/, "");
+            if (!line.trim().startsWith("data:") || data === "[DONE]") continue;
+            const event = JSON.parse(data);
+            if (event.error) throw new Error(event.error.message ?? "stream failed");
+            const text = event.choices?.[0]?.delta?.content;
+            if (text) onText(text);
+          }
+        }
+      }
+
+      form.addEventListener("submit", async (submit) => {
+        submit.preventDefault();
+        const text = input.value.trim();
+        if (!text) return;
+        input.value = "";
+        addMessage("user", text);
+        messages.push({ role: "user", content: text });
+
+        const bubble = addMessage("bot");
+        let reply = "";
+        try {
+          const response = await fetch(`${PROXY}/chat/completions`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ model: "auto", messages, stream: true }),
+          });
+          if (!response.ok) {
+            const failure = await response.json().catch(() => ({}));
+            throw new Error(failure.error?.message ?? `the proxy answered ${response.status}`);
+          }
+          await readStream(response, (piece) => {
+            reply += piece;
+            bubble.textContent = reply;
+            log.scrollTop = log.scrollHeight;
+          });
+          messages.push({ role: "assistant", content: reply });
+          const note = document.createElement("div");
+          note.className = "note";
+          note.textContent = response.headers.get("x-tierhop-target") ?? "";
+          bubble.append(note);
+        } catch (error) {
+          messages.pop();
+          const hint = error instanceof TypeError ? " Is tierhop running?" : "";
+          bubble.textContent = `Could not get a reply: ${error.message}.${hint}`;
+        }
+      });
+    </script>
+  </body>
+</html>
